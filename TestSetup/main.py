@@ -44,4 +44,4 @@ if __name__ == '__main__':
         incoming = ser.read(1)
         if incoming != bytes():
             print(incoming)
-        time.sleep(0.01)
+        time.sleep(0.2)
