@@ -84,6 +84,8 @@ class Window(QWidget):
                 if len(incoming) == 0:
                     continue
 
+                # print(incoming)
+                print(len(incoming))
                 check_value = incoming[0]
                 incoming = incoming[1:]
                 if check_value == 0:
@@ -92,6 +94,13 @@ class Window(QWidget):
                     self.display.data2.extend(incoming)
                 if check_value == 2:
                     self.display.data3.extend(incoming)
+
+            self.serial_com.close()
+            self.timer = QTimer()
+            self.timer.setInterval(15)
+            self.timer.timeout.connect(self.search_serial_com)
+            self.timer.start()
+            self.threadpool.cancel(self.worker)
         except:
             self.serial_com.close()
 

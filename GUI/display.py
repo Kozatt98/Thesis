@@ -10,14 +10,14 @@ class Display(pg.PlotWidget):
         self.data2 = []
         self.data3 = []
 
-        self.setBackground("w")
+        self.setBackground("k")
         self.showGrid(x=True, y=True)
-        self.setXRange(1024, -1024)
-        self.setYRange(255, 0)
 
-        self.pen1 = pg.mkPen(color=(255, 0, 0))
-        self.pen2 = pg.mkPen(color=(0, 0, 255))
-        self.pen3 = pg.mkPen(color=(0, 255, 0))
+        self.plot_changed()
+
+        self.pen1 = pg.mkPen(width=2, color=(255, 0, 0))
+        self.pen2 = pg.mkPen(width=2, color=(0, 0, 255))
+        self.pen3 = pg.mkPen(width=2, color=(0, 255, 0))
 
         self.x_axis = []
         self.y_axis = []
@@ -36,7 +36,7 @@ class Display(pg.PlotWidget):
         self.timer.timeout.connect(self.refresh_plots)
 
     def plot_changed(self):
-        self.setXRange(1024, -1024)
+        self.setXRange(-900, 901)
         self.setYRange(255, 0)
 
     def clear_buffer(self):
@@ -51,6 +51,13 @@ class Display(pg.PlotWidget):
             self.plot2.setData(self.x_axis, self.data2[-2047:], pen=self.pen2)
         if len(self.data3) > 2048:
             self.plot3.setData(self.x_axis, self.data3[-2047:], pen=self.pen3)
+
+        if len(self.data) > 1100000:
+            self.data = self.data[-1000000:]
+        if len(self.data2) > 1100000:
+            self.data = self.data2[-1000000:]
+        if len(self.data3) > 1100000:
+            self.data = self.data3[-1000000:]
 
     def start_refreshing(self):
         self.timer.start()

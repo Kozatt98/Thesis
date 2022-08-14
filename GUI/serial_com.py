@@ -16,8 +16,8 @@ class SerialCom(Serial):
         if not self.is_serial_open:
             ports = serial_ports.comports()
             for p in ports:
-                print(p.name)
-                if (p.vid == 1155 and p.pid == 22336) or p.name == "COM2":
+                if p.vid == 1155 and p.pid == 22336:
+                # if p.name == "COM2":
                     self.port = p.name
                     self.open()
                     if self.isOpen():
