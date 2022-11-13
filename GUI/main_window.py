@@ -1,6 +1,9 @@
 import csv
 import struct
 from datetime import datetime
+
+import numpy as np
+
 from display import Display
 from worker import Worker
 from channel_settings import ChannelSettings
@@ -15,7 +18,7 @@ class Window(QWidget):
         super().__init__()
 
         self.serial_com = SerialCom()  # Todo(Attila): change to serial_com
-
+        self.data_type = np.dtype("u1")
         self.setGeometry(200, 200, 800, 600)
         self.setWindowTitle("Scope")
 
@@ -31,11 +34,8 @@ class Window(QWidget):
         self.worker.signals.error.connect(self.error_handler)
 
         self.save_btn = QPushButton(self)
-        self.clear_btn = QPushButton(self)
-        self.clear_btn.setText("Clear buffer")
         self.save_btn.setText("Save")
         self.save_btn.clicked.connect(self.save)
-        self.clear_btn.clicked.connect(self.display.clear_buffer)
         self.saveName = QLineEdit(self)
         self.saveName.setText("measurement {}.csv".format(datetime.now().strftime("%d-%m-%Y")))
 
@@ -48,7 +48,6 @@ class Window(QWidget):
 
         vbox = QVBoxLayout()
         vbox.addLayout(self.channel_settings)
-        vbox.addWidget(self.clear_btn)
         vbox.addWidget(self.display)
         vbox.addWidget(self.saveName)
         vbox.addWidget(self.save_btn)
@@ -80,20 +79,18 @@ class Window(QWidget):
         try:
             while self.serial_com.isOpen():
                 incoming = self.serial_com.read(2048)
-                incoming = list(incoming)
-                if len(incoming) == 0:
-                    continue
+                np_read = np.frombuffer(incoming, dtype="u1", offset=0, count=2048).view(dtype=self.data_type)
+                print(np_read)
+                if len(incoming) != 0:
 
-                # print(incoming)
-                print(len(incoming))
-                check_value = incoming[0]
-                incoming = incoming[1:]
-                if check_value == 0:
-                    self.display.data.extend(incoming)
-                if check_value == 1:
-                    self.display.data2.extend(incoming)
-                if check_value == 2:
-                    self.display.data3.extend(incoming)
+                    if np_read[0] == 0:
+                        self.display.data = np_read[1:]
+                    if np_read[0] == 1:
+                        self.display.data2 = np_read[1:]
+                    if np_read[0] == 2:
+                        self.display.data3 = np_read[1:]
+
+                    self.display.refresh_plots()
 
             self.serial_com.close()
             self.timer = QTimer()
@@ -129,4 +126,3 @@ class Window(QWidget):
             self.display.start_refreshing()
             self.threadpool.start(self.worker)
             print("Serial found")
-

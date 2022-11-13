@@ -9,15 +9,15 @@ class SerialCom(Serial):
         self.bytesize = EIGHTBITS
         self.parity = PARITY_NONE
         self.stopbits = STOPBITS_ONE
-        self.timeout = 1
+        self.timeout = 5
         self.is_serial_open = False
 
     def search_serial(self):
         if not self.is_serial_open:
             ports = serial_ports.comports()
             for p in ports:
-                if p.vid == 1155 and p.pid == 22336:
-                # if p.name == "COM2":
+                # if p.vid == 1155 and p.pid == 22336:
+                if p.name == "COM2":
                     self.port = p.name
                     self.open()
                     if self.isOpen():

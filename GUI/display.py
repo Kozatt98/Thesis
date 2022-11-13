@@ -1,23 +1,25 @@
 import pyqtgraph as pg
 from PyQt5.QtCore import QTimer
+import numpy as np
 
 
 class Display(pg.PlotWidget):
     def __init__(self):
         super(Display, self).__init__()
         self.data_in = None
-        self.data = []
-        self.data2 = []
-        self.data3 = []
+        self.data = np.zeros(shape=1023, dtype="u1")
+        self.data2 = np.zeros(shape=1023, dtype="u1")
+        self.data3 = np.zeros(shape=1023, dtype="u1")
 
-        self.setBackground("k")
+
+        self.setBackground("w")
         self.showGrid(x=True, y=True)
 
         self.plot_changed()
 
-        self.pen1 = pg.mkPen(width=2, color=(255, 0, 0))
-        self.pen2 = pg.mkPen(width=2, color=(0, 0, 255))
-        self.pen3 = pg.mkPen(width=2, color=(0, 255, 0))
+        self.pen1 = pg.mkPen(width=2, color=(0, 255, 0))
+        self.pen2 = pg.mkPen(width=2, color=(255, 0, 0))
+        self.pen3 = pg.mkPen(width=2, color=(0, 0, 255))
 
         self.x_axis = []
         self.y_axis = []
@@ -36,28 +38,16 @@ class Display(pg.PlotWidget):
         self.timer.timeout.connect(self.refresh_plots)
 
     def plot_changed(self):
-        self.setXRange(-900, 901)
-        self.setYRange(255, 0)
+        # self.setXRange(0, 2047)
+        # self.setYRange(255, 0)
+        pass
 
-    def clear_buffer(self):
-        self.data.clear()
-        self.data2.clear()
-        self.data3.clear()
 
     def refresh_plots(self):
-        if len(self.data) > 2048:
-            self.plot1.setData(self.x_axis, self.data[-2047:], pen=self.pen1)
-        if len(self.data2) > 2048:
-            self.plot2.setData(self.x_axis, self.data2[-2047:], pen=self.pen2)
-        if len(self.data3) > 2048:
-            self.plot3.setData(self.x_axis, self.data3[-2047:], pen=self.pen3)
+        self.plot1.setData(self.data, pen=self.pen1)
+        self.plot2.setData(self.data2, pen=self.pen2)
+        self.plot3.setData(self.data3, pen=self.pen3)
 
-        if len(self.data) > 1100000:
-            self.data = self.data[-1000000:]
-        if len(self.data2) > 1100000:
-            self.data = self.data2[-1000000:]
-        if len(self.data3) > 1100000:
-            self.data = self.data3[-1000000:]
 
     def start_refreshing(self):
         self.timer.start()
