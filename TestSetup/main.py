@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
         for i in range(3):
             ser.write(data[i])
-        incoming = ser.read(1)
+        time.sleep(0.1)
+        incoming = ser.read(3)
         if incoming != bytes():
-            print(incoming)
-        time.sleep(0.2)
+            print(list(incoming))

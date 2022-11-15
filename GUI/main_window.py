@@ -2,11 +2,10 @@ import csv
 import struct
 from datetime import datetime
 
-import numpy as np
-
 from display import Display
 from worker import Worker
 from channel_settings import ChannelSettings
+import numpy as np
 
 from serial_com import SerialCom
 from PyQt5.QtCore import *
@@ -39,20 +38,13 @@ class Window(QWidget):
         self.saveName = QLineEdit(self)
         self.saveName.setText("measurement {}.csv".format(datetime.now().strftime("%d-%m-%Y")))
 
-        self.ranges = ["±1V", "±2V", "±4V", "±5V", "±10V", "±20V"]
-        self.select_range = QComboBox()
-        self.select_range.addItems(self.ranges)
-        self.select_range.currentIndexChanged.connect(self.range_change)
-
-        self.channel_settings = ChannelSettings()
+        self.channel_settings = ChannelSettings(self.serial_com.write, self.display.set_ranges)
 
         vbox = QVBoxLayout()
         vbox.addLayout(self.channel_settings)
         vbox.addWidget(self.display)
         vbox.addWidget(self.saveName)
         vbox.addWidget(self.save_btn)
-        vbox.addWidget(self.select_range)
-
         self.setLayout(vbox)
 
     def save(self):
@@ -80,7 +72,6 @@ class Window(QWidget):
             while self.serial_com.isOpen():
                 incoming = self.serial_com.read(2048)
                 np_read = np.frombuffer(incoming, dtype="u1", offset=0, count=2048).view(dtype=self.data_type)
-                print(np_read)
                 if len(incoming) != 0:
 
                     if np_read[0] == 0:
@@ -123,6 +114,5 @@ class Window(QWidget):
     def search_serial_com(self):
         if self.serial_com.search_serial():
             self.timer.stop()
-            self.display.start_refreshing()
             self.threadpool.start(self.worker)
             print("Serial found")

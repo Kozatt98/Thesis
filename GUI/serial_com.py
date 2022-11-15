@@ -1,5 +1,6 @@
 from serial import *
 import serial.tools.list_ports as serial_ports
+import numpy as np
 
 
 class SerialCom(Serial):
@@ -11,6 +12,11 @@ class SerialCom(Serial):
         self.stopbits = STOPBITS_ONE
         self.timeout = 5
         self.is_serial_open = False
+        self.__init_settings__ = np.ones(3, dtype="B")
+        self.__init_settings__[0] = 255
+        self.__init_settings__[1] = 255
+        self.__init_settings__[2] = 255
+
 
     def search_serial(self):
         if not self.is_serial_open:
@@ -22,6 +28,7 @@ class SerialCom(Serial):
                     self.open()
                     if self.isOpen():
                         print("Connected to device on port ", p.name)
+                        self.write(self.__init_settings__)
                         self.is_serial_open = True
         return self.is_serial_open
 
