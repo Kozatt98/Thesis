@@ -10,8 +10,10 @@ if __name__ == '__main__':
     ser.baudrate = 3000000
     ser.open()
     ser.timeout = 0.001
-    length = 2047
-    bits = 8
+    length = 999
+    bits = 16
+    ser.flushOutput()
+    ser.flushInput()
     while True:
         prefix = [int(0).to_bytes(int(math.ceil(bits / 8)), sys.byteorder),
                   int(1).to_bytes(int(math.ceil(bits / 8)), sys.byteorder),
@@ -41,7 +43,7 @@ if __name__ == '__main__':
 
         for i in range(3):
             ser.write(data[i])
-        time.sleep(0.1)
-        incoming = ser.read(3)
+        incoming = ser.read(6)
         if incoming != bytes():
             print(list(incoming))
+        time.sleep(0.5)

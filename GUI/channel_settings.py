@@ -6,12 +6,18 @@ import numpy as np
 
 class ChannelSettings(QHBoxLayout):
 
-    def __init__(self, send_function, set_range_function):
+    def __init__(self, send_function, set_range_function, trigger_slider):
         super(ChannelSettings, self).__init__()
         self.send_function = send_function
-        self.set_range_function = set_range_function
+        self.set_is_on_function = set_range_function
+        self.trigger_slider = trigger_slider
+
+        self.trigger_slider.sliderReleased.connect(self.on_combobox_changed)
+
         self.__voltage_ranges = ["±1V", "±2V", "±4V", "±5V", "±10V", "±20V", "OFF"]
         self.__current_ranges = ["20mA", "OFF"]
+        self.__trigger_options = ["Rising Edge", "Falling Edge", "None"]
+
         self.font_textfield = QFont("Arial", 20, weight=QFont.Bold)
         self.font_ranges = QFont("Arial", 14, weight=QFont.Decorative)
         self.text_field_size_policy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
@@ -20,6 +26,7 @@ class ChannelSettings(QHBoxLayout):
         self.channel1_range = QComboBox()
         self.channel2_range = QComboBox()
         self.channel3_range = QComboBox()
+        self.trigger_select = QComboBox()
 
         self.text_field1 = QLabel()
         self.text_field1.setAlignment(Qt.AlignCenter)
@@ -51,11 +58,19 @@ class ChannelSettings(QHBoxLayout):
         self.channel3_range.setFont(self.font_ranges)
         self.channel3_range.setMinimumWidth(self.min_width)
 
+        self.text_field4 = QLabel()
+        self.text_field4.setAlignment(Qt.AlignCenter)
+        self.text_field4.setText("Trigger Options")
+        self.text_field4.setFont(self.font_ranges)
+        self.trigger_select.addItems(self.__trigger_options)
+        self.trigger_select.setFont(self.font_ranges)
+        self.trigger_select.setMinimumWidth(self.min_width)
+
         self.horizontal_spacer = QSpacerItem(30, 20, hPolicy=QSizePolicy.Policy.Fixed,
                                              vPolicy=QSizePolicy.Policy.Minimum)
 
-        self.horizontal_spacer_end = QSpacerItem(200, 20, hPolicy=QSizePolicy.Policy.Expanding,
-                                                 vPolicy=QSizePolicy.Policy.Minimum)
+        self.horizontal_spacer = QSpacerItem(200, 20, hPolicy=QSizePolicy.Policy.Expanding,
+                                             vPolicy=QSizePolicy.Policy.Minimum)
 
         self.addItem(self.horizontal_spacer)
         self.addWidget(self.text_field1)
@@ -66,27 +81,35 @@ class ChannelSettings(QHBoxLayout):
         self.addItem(self.horizontal_spacer)
         self.addWidget(self.text_field3)
         self.addWidget(self.channel3_range)
-        self.addItem(self.horizontal_spacer_end)
-        self.addItem(self.horizontal_spacer_end)
+        self.addItem(self.horizontal_spacer)
+        self.addWidget(self.text_field4)
+        self.addWidget(self.trigger_select)
+        self.addItem(self.horizontal_spacer)
 
-        self.channel1_range.setCurrentIndex(len(self.__voltage_ranges) - 1)
+        self.channel1_range.setCurrentIndex(len(self.__voltage_ranges) - 2)
         self.channel2_range.setCurrentIndex(len(self.__voltage_ranges) - 1)
         self.channel3_range.setCurrentIndex(len(self.__current_ranges) - 1)
+        self.trigger_select.setCurrentIndex(len(self.__trigger_options) - 1)
 
         self.channel1_range.currentIndexChanged.connect(self.on_combobox_changed)
         self.channel2_range.currentIndexChanged.connect(self.on_combobox_changed)
         self.channel3_range.currentIndexChanged.connect(self.on_combobox_changed)
-
+        self.trigger_select.currentIndexChanged.connect(self.on_combobox_changed)
 
     def on_combobox_changed(self):
-        data_to_send = np.zeros(3, dtype="B")
-        data_to_send[0] = self.channel1_range.currentIndex()
-        data_to_send[1] = self.channel2_range.currentIndex()
-        data_to_send[2] = self.channel3_range.currentIndex()
-        self.send_function(data_to_send)
-        self.set_range_function(256, 1024, 2048)
+        trigger_value_to_send = self.trigger_slider.value() + 2048
+        tigger_setting_h, tigger_setting_l = trigger_value_to_send >> 8, trigger_value_to_send & 0xFF
+        data_to_send = np.zeros(6, dtype="B")
 
-        # TODO(Attila): Call func with appropriate bytearray according to selection, add connect to combo boxes
-        print("Combo changed")
-        print(data_to_send)
-        print("")
+        data_to_send[0] = self.channel1_range.currentIndex()  # Channel 1
+        data_to_send[1] = self.channel2_range.currentIndex()  # Channel 2
+        data_to_send[2] = self.channel3_range.currentIndex()  # Channel 3
+        data_to_send[3] = self.trigger_select.currentIndex()  # Trigger option
+        data_to_send[4] = tigger_setting_h                    # Trigger value high byte
+        data_to_send[5] = tigger_setting_l                    # Trigger value low byte
+
+        self.send_function(data_to_send)
+
+        self.set_is_on_function(self.channel1_range.currentIndex() != len(self.__voltage_ranges) - 1,
+                                self.channel2_range.currentIndex() != len(self.__voltage_ranges) - 1,
+                                self.channel3_range.currentIndex() != len(self.__current_ranges) - 1)

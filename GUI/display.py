@@ -6,40 +6,59 @@ class Display(pg.PlotWidget):
     def __init__(self):
         super(Display, self).__init__()
         self.data_in = None
-        self.data = np.zeros(shape=1023, dtype="u1")
-        self.data2 = np.zeros(shape=1023, dtype="u1")
-        self.data3 = np.zeros(shape=1023, dtype="u1")
+        self.data_type = np.dtype("u1")
+        self.data = np.zeros(shape=1000, dtype=self.data_type)
+        self.data2 = np.zeros(shape=1000, dtype=self.data_type)
+        self.data3 = np.zeros(shape=1000, dtype=self.data_type)
+
+        self.is_on = [True, False, False]
 
         self.setBackground("w")
         self.showGrid(x=True, y=True)
+        self.sigRangeChanged.connect(self.plot_changed)
 
-        self.plot_changed()
-
-        self.pen1 = pg.mkPen(width=2, color=(0, 255, 0))
+        self.pen1 = pg.mkPen(width=2, color=(0, 0, 255))
         self.pen2 = pg.mkPen(width=2, color=(255, 0, 0))
-        self.pen3 = pg.mkPen(width=2, color=(0, 0, 255))
+        self.pen3 = pg.mkPen(width=2, color=(0, 255, 0))
 
-        self.x_axis = []
-        self.a_y_axis = []
-        self.b_y_axis = []
-        self.c_y_axis = []
+        self.showAxes('left', False)
+        self.showAxes('bottom', False)
+        self.hideButtons()
+        self.setLimits(xMin=-1, xMax=1001, yMin=-0.51, yMax=0.51)
 
-        for i in range(-1024, 1023):
-            self.x_axis.append(i)
+        self.plot1 = self.plot([], pen=self.pen1)
+        self.plot2 = self.plot([], pen=self.pen2)
+        self.plot3 = self.plot([], pen=self.pen3)
 
-        self.plot1 = self.plot(self.x_axis, self.a_y_axis, pen=self.pen1)
-        self.plot2 = self.plot(self.x_axis, self.b_y_axis, pen=self.pen2)
-        self.plot3 = self.plot(self.x_axis, self.c_y_axis, pen=self.pen3)
+        self.setXRange(0, 1000)
+        self.setYRange(-0.5, 0.5)
 
     def plot_changed(self):
-        # self.setXRange(0, 2047)
-        # self.setYRange(255, 0)
-        pass
+        self.setXRange(0, 1000)
+        self.setYRange(-0.5, 0.5)
 
     def refresh_plots(self):
-        self.plot1.setData(self.data, pen=self.pen1)
-        self.plot2.setData(self.data2, pen=self.pen2)
-        self.plot3.setData(self.data3, pen=self.pen3)
+        display_data1 = self.data / 2 ** 16 - 0.5
+        display_data2 = self.data2 / 2 ** 16 - 0.5
+        display_data3 = self.data3 / 2 ** 16 - 0.5
 
-    def set_ranges(self, a_range, b_range, c_range):
-        pass
+        if self.is_on[0]:
+            self.plot1.setData(display_data1, pen=self.pen1)
+        else:
+            self.plot1.setData([-10])
+
+        if self.is_on[1]:
+            self.plot2.setData(display_data2, pen=self.pen2)
+        else:
+            self.plot2.setData([-10])
+
+        if self.is_on[2]:
+            self.plot3.setData(display_data3, pen=self.pen3)
+        else:
+            self.plot3.setData([-10])
+
+    def set_on(self, a_range, b_range, c_range):
+        self.is_on[0] = a_range
+        self.is_on[1] = b_range
+        self.is_on[2] = c_range
+        self.refresh_plots()

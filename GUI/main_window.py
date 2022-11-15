@@ -1,5 +1,4 @@
 import csv
-import struct
 from datetime import datetime
 
 from display import Display
@@ -17,7 +16,7 @@ class Window(QWidget):
         super().__init__()
 
         self.serial_com = SerialCom()  # Todo(Attila): change to serial_com
-        self.data_type = np.dtype("u1")
+        self.data_type = np.dtype("u2")
         self.setGeometry(200, 200, 800, 600)
         self.setWindowTitle("Scope")
 
@@ -38,11 +37,19 @@ class Window(QWidget):
         self.saveName = QLineEdit(self)
         self.saveName.setText("measurement {}.csv".format(datetime.now().strftime("%d-%m-%Y")))
 
-        self.channel_settings = ChannelSettings(self.serial_com.write, self.display.set_ranges)
+        self.trigger_slider = QSlider(Qt.Orientation.Vertical)
+        self.trigger_slider.setRange(-2048, 2047)
+
+        self.channel_settings = ChannelSettings(self.serial_com.send_settings, self.display.set_on, self.trigger_slider)
+
+
+        self.hbox = QHBoxLayout()
+        self.hbox.addWidget(self.display)
+        self.hbox.addWidget(self.trigger_slider)
 
         vbox = QVBoxLayout()
         vbox.addLayout(self.channel_settings)
-        vbox.addWidget(self.display)
+        vbox.addLayout(self.hbox)
         vbox.addWidget(self.saveName)
         vbox.addWidget(self.save_btn)
         self.setLayout(vbox)
@@ -70,17 +77,21 @@ class Window(QWidget):
     def add_data(self):
         try:
             while self.serial_com.isOpen():
-                incoming = self.serial_com.read(2048)
-                np_read = np.frombuffer(incoming, dtype="u1", offset=0, count=2048).view(dtype=self.data_type)
+                incoming = self.serial_com.read(2000)
+                # print(incoming)
+                np_read = np.frombuffer(incoming, dtype="B", offset=0, count=2000).view(dtype=self.data_type)
                 if len(incoming) != 0:
-
+                    # print(np_read)
+                    # print(len(np_read))
                     if np_read[0] == 0:
+                        # print("A")
                         self.display.data = np_read[1:]
                     if np_read[0] == 1:
+                        # print("B")
                         self.display.data2 = np_read[1:]
                     if np_read[0] == 2:
+                        # print("C")
                         self.display.data3 = np_read[1:]
-
                     self.display.refresh_plots()
 
             self.serial_com.close()
@@ -100,16 +111,18 @@ class Window(QWidget):
 
     def cleanup(self):
         print("cleanup")
+        # self.serial_com.reset_input_buffer()
+        # self.serial_com.reset_output_buffer()
         self.serial_com.close()
         self.timer.stop()
 
-    def range_change(self, i):
-        print("Current index {}".format(i))
-        print("Current selection: {}".format(self.ranges[i]))
-        if self.serial_com.isOpen():
-            struct_ = struct.pack('!B', self.select_range.currentIndex())
-            print(struct_)
-            self.serial_com.write(struct_)
+    # def range_change(self, i):
+    #     print("Current index {}".format(i))
+    #     print("Current selection: {}".format(self.ranges[i]))
+    #     if self.serial_com.isOpen():
+    #         struct_ = struct.pack('!B', self.select_range.currentIndex())
+    #         print(struct_)
+    #         self.serial_com.write(struct_)
 
     def search_serial_com(self):
         if self.serial_com.search_serial():
