@@ -227,3 +227,5 @@ fabric.properties
 
 # Libraries
 /lib
+
+/Docs/*

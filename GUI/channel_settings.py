@@ -17,6 +17,8 @@ class ChannelSettings(QHBoxLayout):
         self.__voltage_ranges = ["±1V", "±2V", "±4V", "±5V", "±10V", "±20V", "OFF"]
         self.__current_ranges = ["20mA", "OFF"]
         self.__trigger_options = ["Rising Edge", "Falling Edge", "None"]
+        self.__timescale_options = ["1", "2", "3", "4", "5", "6", "7"]
+        self.__trigger_channel_options = ["", "A", "B"]
 
         self.font_textfield = QFont("Arial", 20, weight=QFont.Bold)
         self.font_ranges = QFont("Arial", 14, weight=QFont.Decorative)
@@ -27,6 +29,8 @@ class ChannelSettings(QHBoxLayout):
         self.channel2_range = QComboBox()
         self.channel3_range = QComboBox()
         self.trigger_select = QComboBox()
+        self.trigger_channel = QComboBox()
+        self.time_scale = QComboBox()
 
         self.text_field1 = QLabel()
         self.text_field1.setAlignment(Qt.AlignCenter)
@@ -66,6 +70,14 @@ class ChannelSettings(QHBoxLayout):
         self.trigger_select.setFont(self.font_ranges)
         self.trigger_select.setMinimumWidth(self.min_width)
 
+        self.trigger_channel.addItems(self.__trigger_channel_options)
+        self.trigger_channel.setFont(self.font_ranges)
+        self.trigger_channel.setMinimumWidth(self.min_width)
+
+        self.time_scale.addItems(self.__timescale_options)
+        self.time_scale.setFont(self.font_ranges)
+        self.time_scale.setMinimumWidth(self.min_width)
+
         self.horizontal_spacer = QSpacerItem(30, 20, hPolicy=QSizePolicy.Policy.Fixed,
                                              vPolicy=QSizePolicy.Policy.Minimum)
 
@@ -82,8 +94,10 @@ class ChannelSettings(QHBoxLayout):
         self.addWidget(self.text_field3)
         self.addWidget(self.channel3_range)
         self.addItem(self.horizontal_spacer)
+        self.addWidget(self.time_scale)
         self.addWidget(self.text_field4)
         self.addWidget(self.trigger_select)
+        self.addWidget(self.trigger_channel)
         self.addItem(self.horizontal_spacer)
 
         self.channel1_range.setCurrentIndex(len(self.__voltage_ranges) - 2)
@@ -95,18 +109,22 @@ class ChannelSettings(QHBoxLayout):
         self.channel2_range.currentIndexChanged.connect(self.on_combobox_changed)
         self.channel3_range.currentIndexChanged.connect(self.on_combobox_changed)
         self.trigger_select.currentIndexChanged.connect(self.on_combobox_changed)
+        self.trigger_channel.currentIndexChanged.connect(self.on_combobox_changed)
+        self.time_scale.currentIndexChanged.connect(self.on_combobox_changed)
 
     def on_combobox_changed(self):
         trigger_value_to_send = self.trigger_slider.value() + 2048
         tigger_setting_h, tigger_setting_l = trigger_value_to_send >> 8, trigger_value_to_send & 0xFF
-        data_to_send = np.zeros(6, dtype="B")
+        data_to_send = np.ones(9, dtype="B")
 
-        data_to_send[0] = self.channel1_range.currentIndex()  # Channel 1
-        data_to_send[1] = self.channel2_range.currentIndex()  # Channel 2
-        data_to_send[2] = self.channel3_range.currentIndex()  # Channel 3
-        data_to_send[3] = self.trigger_select.currentIndex()  # Trigger option
-        data_to_send[4] = tigger_setting_h                    # Trigger value high byte
-        data_to_send[5] = tigger_setting_l                    # Trigger value low byte
+        data_to_send[0] = self.channel1_range.currentIndex()    # Channel 1
+        data_to_send[1] = self.channel2_range.currentIndex()    # Channel 2
+        data_to_send[2] = self.channel3_range.currentIndex()    # Channel 3
+        data_to_send[3] = self.trigger_select.currentIndex()    # Trigger option
+        data_to_send[4] = tigger_setting_h                      # Trigger value high byte
+        data_to_send[5] = tigger_setting_l                      # Trigger value low byte
+        data_to_send[6] = self.trigger_channel.currentIndex()   # Trigger channel
+        data_to_send[7] = self.time_scale.currentIndex()        # TimeScale
 
         self.send_function(data_to_send)
 

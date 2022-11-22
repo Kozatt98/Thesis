@@ -14,7 +14,6 @@ from PyQt5.QtWidgets import *
 class Window(QWidget):
     def __init__(self):
         super().__init__()
-
         self.serial_com = SerialCom()  # Todo(Attila): change to serial_com
         self.data_type = np.dtype("u2")
         self.setGeometry(200, 200, 800, 600)
@@ -77,22 +76,23 @@ class Window(QWidget):
     def add_data(self):
         try:
             while self.serial_com.isOpen():
-                incoming = self.serial_com.read(2000)
-                # print(incoming)
-                np_read = np.frombuffer(incoming, dtype="B", offset=0, count=2000).view(dtype=self.data_type)
-                if len(incoming) != 0:
-                    # print(np_read)
-                    # print(len(np_read))
-                    if np_read[0] == 0:
-                        # print("A")
-                        self.display.data = np_read[1:]
-                    if np_read[0] == 1:
-                        # print("B")
-                        self.display.data2 = np_read[1:]
-                    if np_read[0] == 2:
-                        # print("C")
-                        self.display.data3 = np_read[1:]
-                    self.display.refresh_plots()
+                if self.serial_com.inWaiting():
+                    incoming = self.serial_com.read(500)
+                    print(incoming)
+                    np_read = np.frombuffer(incoming, dtype="B", offset=0, count=500).view(dtype=self.data_type)
+                    if len(incoming) != 0:
+                        # print(np_read)
+                        # print(len(np_read))
+                        if np_read[0] == 0:
+                            # print("A")
+                            self.display.data = np_read[1:]
+                        if np_read[0] == 1:
+                            # print("B")
+                            self.display.data2 = np_read[1:]
+                        if np_read[0] == 2:
+                            # print("C")
+                            self.display.data3 = np_read[1:]
+                        self.display.refresh_plots()
 
             self.serial_com.close()
             self.timer = QTimer()
@@ -113,8 +113,11 @@ class Window(QWidget):
         print("cleanup")
         # self.serial_com.reset_input_buffer()
         # self.serial_com.reset_output_buffer()
+        self.threadpool.cancel(self.worker)
+        self.threadpool.clear()
         self.serial_com.close()
         self.timer.stop()
+        self.destroy()
 
     # def range_change(self, i):
     #     print("Current index {}".format(i))
