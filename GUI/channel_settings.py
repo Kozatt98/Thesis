@@ -121,10 +121,11 @@ class ChannelSettings(QHBoxLayout):
         data_to_send[1] = self.channel2_range.currentIndex()    # Channel 2
         data_to_send[2] = self.channel3_range.currentIndex()    # Channel 3
         data_to_send[3] = self.trigger_select.currentIndex()    # Trigger option
-        data_to_send[4] = tigger_setting_h                      # Trigger value high byte
-        data_to_send[5] = tigger_setting_l                      # Trigger value low byte
+        data_to_send[4] = tigger_setting_l                      # Trigger value low byte
+        data_to_send[5] = tigger_setting_h                      # Trigger value high byte
         data_to_send[6] = self.trigger_channel.currentIndex()   # Trigger channel
         data_to_send[7] = self.time_scale.currentIndex()        # TimeScale
+        data_to_send[8] = 1
 
         self.send_function(data_to_send)
 

@@ -62,6 +62,9 @@ void ADC_IRQHandler(void);
 void OTG_FS_EP1_OUT_IRQHandler(void);
 void OTG_FS_EP1_IN_IRQHandler(void);
 void OTG_FS_IRQHandler(void);
+void TIM16_IRQHandler(void);
+void ADC3_IRQHandler(void);
+void COMP_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

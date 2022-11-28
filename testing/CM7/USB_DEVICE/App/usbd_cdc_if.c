@@ -22,7 +22,7 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-#include "main.h"
+
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,11 +31,7 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
- extern volatile uint8_t input_buffer[APP_RX_DATA_SIZE];
- extern void data_received(void);
- uint8_t buf[7];
-
-
+uint8_t buf[7];
 /* USER CODE END PV */
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -53,7 +49,14 @@
   */
 
 /* USER CODE BEGIN PRIVATE_TYPES */
-
+typedef struct {
+	uint8_t channelA;
+	uint8_t channelB;
+	uint8_t channelC;
+	uint8_t trigger_option;
+	uint16_t trigger_value;
+	uint8_t trigger_channel;
+} options_t;
 /* USER CODE END PRIVATE_TYPES */
 
 /**
@@ -98,6 +101,7 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
+
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
@@ -112,7 +116,8 @@ uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
-
+extern options_t *options;
+extern uint8_t start_flag;
 /* USER CODE END EXPORTED_VARIABLES */
 
 /**
@@ -158,6 +163,7 @@ static int8_t CDC_Init_FS(void)
   /* Set Application Buffers */
   USBD_CDC_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, 0);
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, UserRxBufferFS);
+  start_flag = 1;
   return (USBD_OK);
   /* USER CODE END 3 */
 }
@@ -230,18 +236,19 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
     	buf[4] = pbuf[4];
     	buf[5] = pbuf[5];
     	buf[6] = pbuf[6];
-
+    	buf[7] = pbuf[7];
 
     break;
 
     case CDC_GET_LINE_CODING:
     	pbuf[0] = buf[0];
     	pbuf[1] = buf[1];
-     	pbuf[2] = buf[2];
-      	pbuf[3] = buf[3];
-      	pbuf[4] = buf[4];
-       	pbuf[5] = buf[5];
-       	pbuf[6] = buf[6];
+    	pbuf[2] = buf[2];
+    	pbuf[3] = buf[3];
+    	pbuf[4] = buf[4];
+    	pbuf[5] = buf[5];
+    	pbuf[6] = buf[6];
+    	pbuf[7] = buf[7];
     break;
 
     case CDC_SET_CONTROL_LINE_STATE:
@@ -278,16 +285,9 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
-
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
-
-  memset(input_buffer, 0, APP_RX_DATA_SIZE);
-  memcpy(input_buffer, Buf, *Len);
-  memset(Buf, 0, *Len);
-
-  data_received();
-
+  memcpy(options, Buf, *Len);
   return (USBD_OK);
   /* USER CODE END 6 */
 }
@@ -336,8 +336,6 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
   UNUSED(Buf);
   UNUSED(Len);
   UNUSED(epnum);
-  HAL_GPIO_TogglePin(Sendeng_done_GPIO_Port,Sendeng_done_Pin);
-  HAL_GPIO_TogglePin(Sending2_GPIO_Port, Sending2_Pin);
   /* USER CODE END 13 */
   return result;
 }

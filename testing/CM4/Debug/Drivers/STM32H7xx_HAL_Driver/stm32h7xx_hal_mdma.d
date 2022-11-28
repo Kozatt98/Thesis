@@ -1,5 +1,5 @@
 Drivers/STM32H7xx_HAL_Driver/stm32h7xx_hal_mdma.o: \
- C:/Users/Koza\ Attila/Documents/SZTE/SzakDoga/github/testing/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mdma.c \
+ C:/Users/kozat/STM32CubeIDE/workspace_1.10.1/testing/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mdma.c \
  ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h \
  ../Core/Inc/stm32h7xx_hal_conf.h \
  ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc.h \

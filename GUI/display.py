@@ -24,7 +24,7 @@ class Display(pg.PlotWidget):
         self.showAxes('left', False)
         self.showAxes('bottom', False)
         self.hideButtons()
-        self.setLimits(xMin=-1, xMax=1001, yMin=-0.51, yMax=0.51)
+        self.setLimits(xMin=-1, xMax=501, yMin=-0.51, yMax=0.51)
 
         self.plot1 = self.plot([], pen=self.pen1)
         self.plot2 = self.plot([], pen=self.pen2)
@@ -38,9 +38,9 @@ class Display(pg.PlotWidget):
         self.setYRange(-0.5, 0.5)
 
     def refresh_plots(self):
-        display_data1 = self.data / 2 ** 16 - 0.5
-        display_data2 = self.data2 / 2 ** 16 - 0.5
-        display_data3 = self.data3 / 2 ** 16 - 0.5
+        display_data1 = self.data / 2 ** 8 - 0.5
+        display_data2 = self.data2 / 2 ** 8 - 0.5
+        display_data3 = self.data3 / 2 ** 8 - 0.5
 
         if self.is_on[0]:
             self.plot1.setData(display_data1, pen=self.pen1)
