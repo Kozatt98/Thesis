@@ -78,7 +78,8 @@ class Window(QWidget):
             while self.serial_com.isOpen():
                 if self.serial_com.inWaiting():
                     incoming = self.serial_com.read(500)
-                    # print(len(incoming))
+                    print(len(incoming))
+                    print(list(incoming))
                     np_read = np.frombuffer(incoming, dtype="B", offset=0, count=500).view(dtype=self.data_type)
                     if len(incoming) != 0:
                         # print(np_read)

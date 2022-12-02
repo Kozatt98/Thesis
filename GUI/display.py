@@ -7,9 +7,9 @@ class Display(pg.PlotWidget):
         super(Display, self).__init__()
         self.data_in = None
         self.data_type = np.dtype("u1")
-        self.data = np.zeros(shape=1000, dtype=self.data_type)
-        self.data2 = np.zeros(shape=1000, dtype=self.data_type)
-        self.data3 = np.zeros(shape=1000, dtype=self.data_type)
+        self.data = np.zeros(shape=500, dtype=self.data_type)
+        self.data2 = np.zeros(shape=500, dtype=self.data_type)
+        self.data3 = np.zeros(shape=500, dtype=self.data_type)
 
         self.is_on = [True, False, False]
 
@@ -30,11 +30,11 @@ class Display(pg.PlotWidget):
         self.plot2 = self.plot([], pen=self.pen2)
         self.plot3 = self.plot([], pen=self.pen3)
 
-        self.setXRange(0, 1000)
+        self.setXRange(0, 501)
         self.setYRange(-0.5, 0.5)
 
     def plot_changed(self):
-        self.setXRange(0, 1000)
+        self.setXRange(0, 501)
         self.setYRange(-0.5, 0.5)
 
     def refresh_plots(self):
