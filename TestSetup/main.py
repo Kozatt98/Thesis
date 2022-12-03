@@ -9,9 +9,9 @@ if __name__ == '__main__':
     ser.port = "COM1"
     ser.baudrate = 3000000
     ser.open()
-    ser.timeout = 0.001
-    length = 999
-    bits = 16
+    ser.timeout = 0.01
+    length = 499
+    bits = 8
     ser.flushOutput()
     ser.flushInput()
     while True:
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
         for i in range(3):
             ser.write(data[i])
-        incoming = ser.read(6)
+        incoming = ser.read(9)
         if incoming != bytes():
             print(list(incoming))
         time.sleep(0.5)

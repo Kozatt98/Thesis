@@ -41,6 +41,9 @@ class Window(QWidget):
 
         self.channel_settings = ChannelSettings(self.serial_com.send_settings, self.display.set_on, self.trigger_slider)
 
+        self.trigger_counter_display = QLabel()
+        self.trigger_counter = 0
+        self.trigger_counter_display.setText(str(self.trigger_counter))
 
         self.hbox = QHBoxLayout()
         self.hbox.addWidget(self.display)
@@ -51,6 +54,7 @@ class Window(QWidget):
         vbox.addLayout(self.hbox)
         vbox.addWidget(self.saveName)
         vbox.addWidget(self.save_btn)
+        vbox.addWidget(self.trigger_counter_display)
         self.setLayout(vbox)
 
     def save(self):
@@ -78,10 +82,12 @@ class Window(QWidget):
             while self.serial_com.isOpen():
                 if self.serial_com.inWaiting():
                     incoming = self.serial_com.read(500)
-                    print(len(incoming))
-                    print(list(incoming))
+                    # print(len(incoming))
+                    # print(list(incoming))
                     np_read = np.frombuffer(incoming, dtype="B", offset=0, count=500).view(dtype=self.data_type)
                     if len(incoming) != 0:
+                        self.trigger_counter = self.trigger_counter + 1
+                        self.trigger_counter_display.setText(str(self.trigger_counter))
                         # print(np_read)
                         # print(len(np_read))
                         if np_read[0] == 0:
@@ -93,7 +99,7 @@ class Window(QWidget):
                         if np_read[0] == 2:
                             # print("C")
                             self.display.data3 = np_read[1:]
-                        self.display.refresh_plots()
+                        # self.display.refresh_plots()
 
             self.serial_com.close()
             self.timer = QTimer()

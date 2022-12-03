@@ -113,6 +113,7 @@ class ChannelSettings(QHBoxLayout):
         self.time_scale.currentIndexChanged.connect(self.on_combobox_changed)
 
     def on_combobox_changed(self):
+        # TODO: HAndle if serial is not open
         trigger_value_to_send = self.trigger_slider.value() + 2048
         tigger_setting_h, tigger_setting_l = trigger_value_to_send >> 8, trigger_value_to_send & 0xFF
         data_to_send = np.ones(9, dtype="B")

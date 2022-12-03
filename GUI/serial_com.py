@@ -31,4 +31,6 @@ class SerialCom(Serial):
         return self.is_serial_open
 
     def send_settings(self, settings):
+        if not self.isOpen():
+            return
         self.write(settings)
