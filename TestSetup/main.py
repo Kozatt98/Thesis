@@ -9,9 +9,11 @@ if __name__ == '__main__':
     ser.port = "COM1"
     ser.baudrate = 3000000
     ser.open()
-    ser.timeout = 0.001
-    length = 2047
+    ser.timeout = 0.01
+    length = 499
     bits = 8
+    ser.flushOutput()
+    ser.flushInput()
     while True:
         prefix = [int(0).to_bytes(int(math.ceil(bits / 8)), sys.byteorder),
                   int(1).to_bytes(int(math.ceil(bits / 8)), sys.byteorder),
@@ -41,7 +43,7 @@ if __name__ == '__main__':
 
         for i in range(3):
             ser.write(data[i])
-        incoming = ser.read(1)
+        incoming = ser.read(9)
         if incoming != bytes():
-            print(incoming)
-        time.sleep(0.01)
+            print(list(incoming))
+        time.sleep(0.5)
